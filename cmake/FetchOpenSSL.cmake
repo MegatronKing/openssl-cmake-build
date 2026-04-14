@@ -33,7 +33,7 @@ function(fetch_openssl)
             set(OPENSSL_DOWNLOAD_URL https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_TARGET_VERSION}/openssl-${OPENSSL_TARGET_VERSION}.tar.gz)
 
             if(OPENSSL_TARGET_VERSION VERSION_EQUAL PROJECT_VERSION)
-                list(APPEND CPM_OPTIONS URL_HASH SHA256=aaf51a1fe064384f811daeaeb4ec4dce7340ec8bd893027eee676af31e83a04f)
+                list(APPEND CPM_OPTIONS URL_HASH SHA256=c32cf49a959c4f345f9606982dd36e7d28f7c58b19c2e25d75624d2b3d2f79ac)
             elseif(OPENSSL_TARGET_VERSION MATCHES "^1\.1\.1[a-w]$")
                 string(REPLACE "." "_" OPENSSL_TAGGED_VERSION ${OPENSSL_TARGET_VERSION})
                 set(OPENSSL_DOWNLOAD_URL https://github.com/openssl/openssl/releases/download/OpenSSL_${OPENSSL_TAGGED_VERSION}/openssl-${OPENSSL_TARGET_VERSION}.tar.gz)
