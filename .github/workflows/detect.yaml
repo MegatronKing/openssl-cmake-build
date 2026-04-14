@@ -40,13 +40,13 @@ jobs:
         arch: [arm64, x86_64]
         include:
           - preset: freebsd
-            version: "14.2"
+            version: "15.0"
             install: sudo pkg install -y cmake perl5
           - preset: netbsd
             version: "10.1"
             install: sudo pkgin -y install cmake perl
           - preset: openbsd
-            version: "7.7"
+            version: "7.8"
             install: sudo pkg_add cmake
     name: ${{ matrix.preset }}-${{ matrix.arch }}
     runs-on: ubuntu-latest
@@ -57,7 +57,7 @@ jobs:
           path: ${{ env.cpm-path }}
           key: ${{ env.cpm-key }}
           enableCrossOsArchive: true
-      - uses: cross-platform-actions/action@master
+      - uses: cross-platform-actions/action@v1
         with:
           operating_system: ${{ matrix.preset }}
           architecture: ${{ matrix.arch }}
