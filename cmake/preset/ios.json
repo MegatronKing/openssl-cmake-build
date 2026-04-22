@@ -1,14 +1,23 @@
 {
-    "version": 4,
+    "version": 5,
     "include": [
         "base.json"
     ],
     "configurePresets": [
         {
-            "name": "ios-arm64",
+            "name": "ios",
             "inherits": [
                 "host-macos",
                 "target-ios",
+                "xcode",
+                "default"
+            ]
+        },
+        {
+            "name": "ios_sim",
+            "inherits": [
+                "host-macos",
+                "target-ios_sim",
                 "xcode",
                 "default"
             ]
@@ -24,10 +33,52 @@
             ]
         },
         {
-            "name": "ios-arm64",
-            "configurePreset": "ios-arm64",
+            "name": "ios",
+            "configurePreset": "ios",
             "inherits": [
                 "host-macos",
+                "build-options"
+            ]
+        },
+        {
+            "name": "ios-clean",
+            "configurePreset": "ios",
+            "inherits": [
+                "host-macos",
+                "clean"
+            ]
+        },
+        {
+            "name": "ios-install",
+            "configurePreset": "ios",
+            "inherits": [
+                "host-macos",
+                "install",
+                "build-options"
+            ]
+        },
+        {
+            "name": "ios_sim",
+            "configurePreset": "ios_sim",
+            "inherits": [
+                "host-macos",
+                "build-options"
+            ]
+        },
+        {
+            "name": "ios_sim-clean",
+            "configurePreset": "ios_sim",
+            "inherits": [
+                "host-macos",
+                "clean"
+            ]
+        },
+        {
+            "name": "ios_sim-install",
+            "configurePreset": "ios_sim",
+            "inherits": [
+                "host-macos",
+                "install",
                 "build-options"
             ]
         }
