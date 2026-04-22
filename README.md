@@ -117,6 +117,7 @@ choco install -y cmake jom strawberryperl nasm ccache --installargs 'ADD_CMAKE_T
 | `OPENSSL_BUILD_VERBOSE`     | bool   | `OFF`                   | Show verbose output during the build                 |
 | `OPENSSL_CONFIGURE_OPTIONS` | list   | `(undefined)`           | Pass extra options to OpenSSL `Configure`            |
 | `OPENSSL_CONFIGURE_VERBOSE` | bool   | `OFF`                   | Show verbose output during configuration             |
+| `OPENSSL_DISABLE_SYSTEM_CERTS` | bool | `ON`                  | Disable Windows system certificate store integration |
 | `OPENSSL_ENABLE_PARALLEL`   | bool   | `ON`                    | Build and test in parallel when supported            |
 | `OPENSSL_INSTALL`           | bool   | `OFF`                   | Install OpenSSL components                           |
 | `OPENSSL_INSTALL_CERT`      | bool   | `OFF`                   | Install `cert.pem` into the `openssldir` directory   |
@@ -129,8 +130,10 @@ choco install -y cmake jom strawberryperl nasm ccache --installargs 'ADD_CMAKE_T
 | `OPENSSL_USE_CCACHE`        | bool   | `ON`                    | Enable `ccache` when it is available                 |
 
 - `OPENSSL_CONFIGURE_OPTIONS`: `enable-legacy` and `no-module` are always added by this project.
+- `OPENSSL_CONFIGURE_OPTIONS`: `no-engine` and `no-winstore` are added on Windows when `OPENSSL_DISABLE_SYSTEM_CERTS` is `ON`.
 - `OPENSSL_CONFIGURE_OPTIONS`: `no-shared` is added when `BUILD_SHARED_LIBS` is `OFF`.
 - `OPENSSL_CONFIGURE_OPTIONS`: `no-tests` is added when `OPENSSL_TEST` is `OFF`.
+- `OPENSSL_DISABLE_SYSTEM_CERTS`: This removes Windows certificate store integration and also disables legacy OpenSSL ENGINE support.
 - `OPENSSL_PATCH`: Patch files must use `LF` line endings because the OpenSSL source tree uses `LF`.
 - `OPENSSL_SOURCE`: This can point to either a local source tree or a downloadable archive.
 - `OPENSSL_TARGET_PLATFORM`: This is detected automatically unless you set it explicitly.

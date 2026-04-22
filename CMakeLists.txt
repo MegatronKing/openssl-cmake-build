@@ -27,6 +27,7 @@ include(cmake/GetCPM.cmake)
 # Custom options
 option(OPENSSL_BUILD_VERBOSE "Enable verbose output from build" OFF)
 option(OPENSSL_CONFIGURE_VERBOSE "Enable verbose output from configuration" OFF)
+option(OPENSSL_DISABLE_SYSTEM_CERTS "Disable Windows system certificate store and CryptoAPI integration" ON)
 option(OPENSSL_ENABLE_PARALLEL "Build and test in parallel if possible" ON)
 option(OPENSSL_INSTALL "Install OpenSSL components to the <prefix> directory" OFF)
 option(OPENSSL_INSTALL_CERT "Install cert.pem to the <openssldir> directory" OFF)
@@ -134,6 +135,10 @@ message(STATUS "Parallel jobs: ${NUMBER_OF_THREADS}")
 
 # Modify configure/build options
 list(APPEND OPENSSL_CONFIGURE_OPTIONS enable-legacy no-module)
+
+if(WIN32 AND OPENSSL_DISABLE_SYSTEM_CERTS)
+    list(APPEND OPENSSL_CONFIGURE_OPTIONS no-engine no-winstore)
+endif()
 
 if(OPENSSL_TEST AND NOT CMAKE_CROSSCOMPILING)
     set(OPENSSL_BUILD_TARGET "")
