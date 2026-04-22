@@ -61,7 +61,7 @@ jobs:
     with:
       platform_name: macos
       build_mode: preset
-      matrix_json: '{"include":[{"os":"macos-latest","preset":"macos","archive_ext":"tar.gz"}]}'
+      matrix_json: '{"include":[{"os":"macos-latest","preset":"macos-arm64","archive_ext":"tar.gz"},{"os":"macos-latest","preset":"macos-x86_64","archive_ext":"tar.gz"}]}'
       openssl_version: ${{ needs.resolve-release.outputs.openssl_version }}
       release_tag: ${{ needs.resolve-release.outputs.release_tag }}
       release_name: ${{ needs.resolve-release.outputs.release_name }}
