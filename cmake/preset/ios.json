@@ -12,15 +12,6 @@
                 "xcode",
                 "default"
             ]
-        },
-        {
-            "name": "ios_sim",
-            "inherits": [
-                "host-macos",
-                "target-ios_sim",
-                "xcode",
-                "default"
-            ]
         }
     ],
     "buildPresets": [
@@ -35,14 +26,6 @@
         {
             "name": "ios",
             "configurePreset": "ios",
-            "inherits": [
-                "host-macos",
-                "build-options"
-            ]
-        },
-        {
-            "name": "ios_sim",
-            "configurePreset": "ios_sim",
             "inherits": [
                 "host-macos",
                 "build-options"

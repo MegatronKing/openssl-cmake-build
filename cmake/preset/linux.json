@@ -5,7 +5,7 @@
     ],
     "configurePresets": [
         {
-            "name": "linux",
+            "name": "linux-x86_64",
             "inherits": [
                 "host-linux",
                 "target-linux",
@@ -36,8 +36,8 @@
     ],
     "buildPresets": [
         {
-            "name": "linux",
-            "configurePreset": "linux",
+            "name": "linux-x86_64",
+            "configurePreset": "linux-x86_64",
             "inherits": [
                 "host-linux"
             ]
@@ -59,8 +59,8 @@
     ],
     "testPresets": [
         {
-            "name": "linux",
-            "configurePreset": "linux",
+            "name": "linux-x86_64",
+            "configurePreset": "linux-x86_64",
             "inherits": [
                 "host-linux",
                 "options"
