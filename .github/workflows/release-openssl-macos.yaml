@@ -1,0 +1,67 @@
+name: Release OpenSSL macOS
+
+on:
+  workflow_dispatch:
+    inputs:
+      openssl_version:
+        description: OpenSSL version to build
+        required: true
+        default: 3.6.1
+      release_tag:
+        description: Tag name to create or update
+        required: false
+      release_name:
+        description: Release title
+        required: false
+  push:
+    tags:
+      - openssl-*
+
+permissions:
+  contents: write
+
+jobs:
+  resolve-release:
+    name: resolve-release
+    runs-on: ubuntu-latest
+    outputs:
+      openssl_version: ${{ steps.resolve.outputs.openssl_version }}
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+      release_name: ${{ steps.resolve.outputs.release_name }}
+    steps:
+      - name: Resolve release metadata
+        id: resolve
+        shell: bash
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            version="${{ inputs.openssl_version }}"
+            tag="${{ inputs.release_tag }}"
+            name="${{ inputs.release_name }}"
+
+            if [[ -z "$tag" ]]; then
+              tag="openssl-$version"
+            fi
+
+            if [[ -z "$name" ]]; then
+              name="OpenSSL $version"
+            fi
+          else
+            tag="${GITHUB_REF_NAME}"
+            version="${tag#openssl-}"
+            name="OpenSSL $version"
+          fi
+
+          echo "openssl_version=$version" >> "$GITHUB_OUTPUT"
+          echo "release_tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "release_name=$name" >> "$GITHUB_OUTPUT"
+
+  release-macos:
+    needs: resolve-release
+    uses: ./.github/workflows/release-openssl-platform-reusable.yaml
+    with:
+      platform_name: macos
+      build_mode: preset
+      matrix_json: '{"include":[{"os":"macos-latest","preset":"macos","archive_ext":"tar.gz"}]}'
+      openssl_version: ${{ needs.resolve-release.outputs.openssl_version }}
+      release_tag: ${{ needs.resolve-release.outputs.release_tag }}
+      release_name: ${{ needs.resolve-release.outputs.release_name }}
