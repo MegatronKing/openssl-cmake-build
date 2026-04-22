@@ -55,9 +55,25 @@ jobs:
 
       - name: Install dependencies on Linux
         if: runner.os == 'Linux'
+        shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build perl ccache
+          missing_packages=()
+
+          if ! command -v ninja >/dev/null 2>&1; then
+            missing_packages+=(ninja-build)
+          fi
+
+          if ! command -v perl >/dev/null 2>&1; then
+            missing_packages+=(perl)
+          fi
+
+          if [ ${#missing_packages[@]} -eq 0 ]; then
+            echo "Linux build dependencies already available"
+            exit 0
+          fi
+
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::ForceIPv4=true update
+          sudo apt-get install -y "${missing_packages[@]}"
 
       - name: Set up Android NDK
         if: startsWith(matrix.preset, 'android-')
