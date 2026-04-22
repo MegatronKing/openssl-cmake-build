@@ -43,6 +43,7 @@ jobs:
       matrix: ${{ fromJson(inputs.matrix_json) }}
     env:
       OPENSSL_VERSION: ${{ inputs.openssl_version }}
+      INSTALL_DIR: ${{ github.workspace }}/install/${{ matrix.preset }}
     steps:
       - uses: actions/checkout@v6
 
@@ -87,12 +88,19 @@ jobs:
         run: >
           cmake --preset ${{ matrix.preset }}
           -DCPM_SOURCE_CACHE=${{ github.workspace }}/${{ env.CPM_SOURCE_CACHE }}
+          -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }}
           -DOPENSSL_TARGET_VERSION=${{ env.OPENSSL_VERSION }}
           -DOPENSSL_BUILD_VERBOSE=ON
           -DOPENSSL_CONFIGURE_VERBOSE=ON
 
-      - name: Build and install
-        run: cmake --build --preset ${{ matrix.preset }} --config Release -t install
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }} --config Release
+
+      - name: Install
+        shell: bash
+        run: |
+          cmake --install "build/${{ matrix.preset }}" --config Release --prefix "${INSTALL_DIR}"
+          test -d "${INSTALL_DIR}"
 
       - name: Package artifact on Unix-like runners
         if: runner.os != 'Windows'
@@ -100,7 +108,7 @@ jobs:
         run: |
           asset_name="openssl-${OPENSSL_VERSION}-${{ matrix.preset }}.${{ matrix.archive_ext }}"
           mkdir -p release
-          tar -C install -czf "release/${asset_name}" "${{ matrix.preset }}"
+          tar -C "${INSTALL_DIR}" -czf "release/${asset_name}" .
 
       - name: Package artifact on Windows
         if: runner.os == 'Windows'
@@ -108,7 +116,7 @@ jobs:
         run: |
           $assetName = "openssl-${env:OPENSSL_VERSION}-${{ matrix.preset }}.${{ matrix.archive_ext }}"
           New-Item -ItemType Directory -Path release -Force | Out-Null
-          Compress-Archive -Path "install/${{ matrix.preset }}" -DestinationPath "release/$assetName" -Force
+          Compress-Archive -Path "${env:INSTALL_DIR}/*" -DestinationPath "release/$assetName" -Force
 
       - name: Upload packaged artifact
         uses: actions/upload-artifact@v4
