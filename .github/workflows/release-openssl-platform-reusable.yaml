@@ -166,6 +166,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OPENSSL_VERSION: ${{ inputs.openssl_version }}
+      INSTALL_DIR: ${{ github.workspace }}/install/freebsd
     steps:
       - uses: actions/checkout@v6
 
@@ -186,12 +187,12 @@ jobs:
             cmake -B build/freebsd -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
               -DCPM_SOURCE_CACHE=${{ env.CPM_SOURCE_CACHE }} \
-              -DCMAKE_INSTALL_PREFIX=${PWD}/install/freebsd \
+              -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} \
               -DOPENSSL_INSTALL=ON \
               -DOPENSSL_TARGET_VERSION=${{ env.OPENSSL_VERSION }}
             cmake --build build/freebsd -t install
             mkdir -p release
-            tar -C install -czf release/openssl-${{ env.OPENSSL_VERSION }}-freebsd.tar.gz freebsd
+            tar -C ${{ env.INSTALL_DIR }} -czf release/openssl-${{ env.OPENSSL_VERSION }}-freebsd.tar.gz .
 
       - name: Upload packaged artifact
         uses: actions/upload-artifact@v4
@@ -240,6 +241,7 @@ jobs:
     runs-on: windows-latest
     env:
       OPENSSL_VERSION: ${{ inputs.openssl_version }}
+      INSTALL_DIR: ${{ github.workspace }}/install/mingw64
     defaults:
       run:
         shell: msys2 {0}
@@ -262,7 +264,7 @@ jobs:
           cmake -B build/mingw64 -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCPM_SOURCE_CACHE="$PWD/${CPM_SOURCE_CACHE}" \
-            -DCMAKE_INSTALL_PREFIX="$PWD/install/mingw64" \
+            -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" \
             -DOPENSSL_INSTALL=ON \
             -DOPENSSL_TARGET_VERSION="${OPENSSL_VERSION}" \
             -DOPENSSL_BUILD_VERBOSE=ON \
@@ -274,7 +276,7 @@ jobs:
       - name: Package artifact
         run: |
           mkdir -p release
-          tar -C install -czf "release/openssl-${OPENSSL_VERSION}-mingw64.tar.gz" mingw64
+          tar -C "${INSTALL_DIR}" -czf "release/openssl-${OPENSSL_VERSION}-mingw64.tar.gz" .
 
       - name: Upload packaged artifact
         uses: actions/upload-artifact@v4
