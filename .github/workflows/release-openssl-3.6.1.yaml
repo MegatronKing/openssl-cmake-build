@@ -1,0 +1,267 @@
+name: Release OpenSSL 3.6.1
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Tag name to create or update
+        required: true
+        default: openssl-3.6.1
+      release_name:
+        description: Release title
+        required: true
+        default: OpenSSL 3.6.1
+  push:
+    tags:
+      - openssl-3.6.1
+
+permissions:
+  contents: write
+
+env:
+  OPENSSL_VERSION: 3.6.1
+  CPM_SOURCE_CACHE: .cpm
+
+jobs:
+  build:
+    name: ${{ matrix.preset }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            preset: linux
+            archive_ext: tar.gz
+          - os: ubuntu-latest
+            preset: android-arm
+            archive_ext: tar.gz
+          - os: ubuntu-latest
+            preset: android-arm64
+            archive_ext: tar.gz
+          - os: ubuntu-latest
+            preset: android-x86
+            archive_ext: tar.gz
+          - os: ubuntu-latest
+            preset: android-x86_64
+            archive_ext: tar.gz
+          - os: macos-latest
+            preset: macos
+            archive_ext: tar.gz
+          - os: macos-latest
+            preset: ios
+            archive_ext: tar.gz
+          - os: macos-latest
+            preset: ios_sim
+            archive_ext: tar.gz
+          - os: windows-latest
+            preset: windows-x86
+            archive_ext: zip
+          - os: windows-latest
+            preset: windows-x86_64
+            archive_ext: zip
+          - os: windows-latest
+            preset: windows-arm
+            archive_ext: zip
+          - os: windows-latest
+            preset: windows-arm64
+            archive_ext: zip
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/cache@v5
+        with:
+          path: ${{ env.CPM_SOURCE_CACHE }}
+          key: release-${{ env.OPENSSL_VERSION }}-cpm-${{ runner.os }}
+          enableCrossOsArchive: true
+
+      - name: Install dependencies on Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build perl ccache
+
+      - name: Set up Android NDK
+        if: startsWith(matrix.preset, 'android-')
+        id: android-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: 25.2.9519653
+
+      - name: Export Android NDK path
+        if: startsWith(matrix.preset, 'android-')
+        shell: bash
+        run: echo "ANDROID_NDK=${{ steps.android-ndk.outputs.ndk-path }}" >> "$GITHUB_ENV"
+
+      - name: Install dependencies on macOS
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install perl ccache
+
+      - name: Install dependencies on Windows
+        if: runner.os == 'Windows'
+        run: |
+          choco install -y jom nasm strawberryperl
+          echo "C:\Program Files\NASM" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "C:\Strawberry\perl\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Configure CMake
+        run: >
+          cmake --preset ${{ matrix.preset }}
+          -DCPM_SOURCE_CACHE=${{ github.workspace }}/${{ env.CPM_SOURCE_CACHE }}
+          -DOPENSSL_TARGET_VERSION=${{ env.OPENSSL_VERSION }}
+          -DOPENSSL_BUILD_VERBOSE=ON
+          -DOPENSSL_CONFIGURE_VERBOSE=ON
+
+      - name: Build and install
+        run: cmake --build --preset ${{ matrix.preset }} --config Release -t install
+
+      - name: Package artifact on Unix-like runners
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          asset_name="openssl-${OPENSSL_VERSION}-${{ matrix.preset }}.${{ matrix.archive_ext }}"
+          mkdir -p release
+          tar -C install -czf "release/${asset_name}" "${{ matrix.preset }}"
+
+      - name: Package artifact on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $assetName = "openssl-${env:OPENSSL_VERSION}-${{ matrix.preset }}.${{ matrix.archive_ext }}"
+          New-Item -ItemType Directory -Path release -Force | Out-Null
+          Compress-Archive -Path "install/${{ matrix.preset }}" -DestinationPath "release/$assetName" -Force
+
+      - name: Upload packaged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.preset }}
+          path: release/*
+          if-no-files-found: error
+
+  build-freebsd:
+    name: freebsd
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/cache@v5
+        with:
+          path: ${{ env.CPM_SOURCE_CACHE }}
+          key: release-${{ env.OPENSSL_VERSION }}-cpm-freebsd
+          enableCrossOsArchive: true
+
+      - uses: cross-platform-actions/action@v1
+        with:
+          operating_system: freebsd
+          architecture: x86_64
+          version: "15.0"
+          memory: 8G
+          run: |
+            sudo pkg install -y cmake perl5 ninja
+            cmake -B build/freebsd -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCPM_SOURCE_CACHE=${{ env.CPM_SOURCE_CACHE }} \
+              -DCMAKE_INSTALL_PREFIX=${PWD}/install/freebsd \
+              -DOPENSSL_INSTALL=ON \
+              -DOPENSSL_TARGET_VERSION=${{ env.OPENSSL_VERSION }}
+            cmake --build build/freebsd -t install
+            mkdir -p release
+            tar -C install -czf release/openssl-${{ env.OPENSSL_VERSION }}-freebsd.tar.gz freebsd
+
+      - name: Upload packaged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-freebsd
+          path: release/*
+          if-no-files-found: error
+
+  build-mingw64:
+    name: mingw64
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          pacboy: >-
+            cmake:p
+            gcc:p
+            make:p
+            ninja:p
+            perl:p
+
+      - name: Configure CMake
+        run: |
+          cmake -B build/mingw64 -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCPM_SOURCE_CACHE="$PWD/${CPM_SOURCE_CACHE}" \
+            -DCMAKE_INSTALL_PREFIX="$PWD/install/mingw64" \
+            -DOPENSSL_INSTALL=ON \
+            -DOPENSSL_TARGET_VERSION="${OPENSSL_VERSION}" \
+            -DOPENSSL_BUILD_VERBOSE=ON \
+            -DOPENSSL_CONFIGURE_VERBOSE=ON
+
+      - name: Build and install
+        run: cmake --build build/mingw64 -t install
+
+      - name: Package artifact
+        run: |
+          mkdir -p release
+          tar -C install -czf "release/openssl-${OPENSSL_VERSION}-mingw64.tar.gz" mingw64
+
+      - name: Upload packaged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-mingw64
+          path: release/*
+          if-no-files-found: error
+
+  publish-release:
+    name: publish-release
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - build-freebsd
+      - build-mingw64
+    steps:
+      - name: Resolve release metadata
+        id: release-meta
+        shell: bash
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            echo "tag=${{ inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+            echo "name=${{ inputs.release_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            echo "name=OpenSSL ${OPENSSL_VERSION}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download packaged artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: release-assets
+          pattern: release-*
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd release-assets
+          sha256sum * > SHA256SUMS.txt
+
+      - name: Publish release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release-meta.outputs.tag }}
+          name: ${{ steps.release-meta.outputs.name }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+          files: release-assets/*

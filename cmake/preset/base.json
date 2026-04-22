@@ -54,8 +54,8 @@
             "toolchainFile": "$env{ANDROID_NDK}/build/cmake/android.toolchain.cmake",
             "cacheVariables": {
                 "ANDROID_NDK": "$env{ANDROID_NDK}",
-                "ANDROID_PLATFORM": "android-27",
-                "OPENSSL_CONFIGURE_OPTIONS": "-D__ANDROID_API__=27;--openssldir=/system/etc/security/cacerts",
+                "ANDROID_PLATFORM": "android-21",
+                "OPENSSL_CONFIGURE_OPTIONS": "-D__ANDROID_API__=21;--openssldir=/system/etc/security/cacerts",
                 "OPENSSL_PATCH": "${sourceDir}/patch/android.patch"
             }
         },
