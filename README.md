@@ -24,7 +24,7 @@ OpenSSL self tests are optional. Configure with `-DOPENSSL_TEST=ON` and then run
 
 ```sh
 cmake --list-presets all                    # List available presets
-cmake --preset <preset>                     # Configure
+cmake --preset <preset>                     # Configure (defaults to enable-legacy;no-module)
 cmake --build --preset <preset>             # Build
 cmake --build --preset <preset> -t install  # Install
 ```
@@ -115,7 +115,7 @@ choco install -y cmake jom strawberryperl nasm ccache --installargs 'ADD_CMAKE_T
 | `OPENSSL_BUILD_OPTIONS`     | list   | `(undefined)`           | Pass extra `make`-compatible build options           |
 | `OPENSSL_BUILD_TARGET`      | string | `build_libs`            | Select the Makefile target to build                  |
 | `OPENSSL_BUILD_VERBOSE`     | bool   | `OFF`                   | Show verbose output during the build                 |
-| `OPENSSL_CONFIGURE_OPTIONS` | list   | `(undefined)`           | Pass extra options to OpenSSL `Configure`            |
+| `OPENSSL_CONFIGURE_OPTIONS` | list   | `enable-legacy;no-module` | Pass extra options to OpenSSL `Configure`          |
 | `OPENSSL_CONFIGURE_VERBOSE` | bool   | `OFF`                   | Show verbose output during configuration             |
 | `OPENSSL_ENABLE_PARALLEL`   | bool   | `ON`                    | Build and test in parallel when supported            |
 | `OPENSSL_INSTALL`           | bool   | `OFF`                   | Install OpenSSL components                           |
@@ -128,6 +128,7 @@ choco install -y cmake jom strawberryperl nasm ccache --installargs 'ADD_CMAKE_T
 | `OPENSSL_TEST`              | bool   | `OFF`                   | Build and run the OpenSSL self tests                 |
 | `OPENSSL_USE_CCACHE`        | bool   | `ON`                    | Enable `ccache` when it is available                 |
 
+- `OPENSSL_CONFIGURE_OPTIONS`: Defaults to `enable-legacy;no-module` unless you override it explicitly.
 - `OPENSSL_CONFIGURE_OPTIONS`: `no-shared` is added when `BUILD_SHARED_LIBS` is `OFF`.
 - `OPENSSL_CONFIGURE_OPTIONS`: `no-tests` is added when `OPENSSL_TEST` is `OFF`.
 - `OPENSSL_PATCH`: Patch files must use `LF` line endings because the OpenSSL source tree uses `LF`.

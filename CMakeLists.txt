@@ -33,6 +33,10 @@ option(OPENSSL_INSTALL_CERT "Install cert.pem to the <openssldir> directory" OFF
 option(OPENSSL_TEST "Enable testing and build OpenSSL self tests" OFF)
 option(OPENSSL_USE_CCACHE "Use ccache if available" ON)
 
+if("${OPENSSL_CONFIGURE_OPTIONS}" STREQUAL "")
+    set(OPENSSL_CONFIGURE_OPTIONS enable-legacy no-module)
+endif()
+
 if("${OPENSSL_BUILD_TARGET}" STREQUAL "")
     # Makefile target for build
     set(OPENSSL_BUILD_TARGET build_libs)
