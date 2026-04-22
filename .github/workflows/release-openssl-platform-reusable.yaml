@@ -134,6 +134,7 @@ jobs:
       OPENSSL_VERSION: ${{ inputs.openssl_version }}
       RELEASE_TAG: ${{ inputs.release_tag }}
       RELEASE_NAME: ${{ inputs.release_name }}
+      GH_REPO: ${{ github.repository }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Download packaged artifacts
@@ -152,13 +153,14 @@ jobs:
       - name: Publish release assets
         shell: bash
         run: |
-          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+          if ! gh release view "$RELEASE_TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
             gh release create "$RELEASE_TAG" \
+              --repo "$GH_REPO" \
               --title "$RELEASE_NAME" \
               --notes "OpenSSL release artifacts for $OPENSSL_VERSION." || true
           fi
 
-          gh release upload "$RELEASE_TAG" release-assets/* --clobber
+          gh release upload "$RELEASE_TAG" release-assets/* --repo "$GH_REPO" --clobber
 
   build-freebsd:
     if: ${{ inputs.build_mode == 'freebsd' }}
@@ -210,6 +212,7 @@ jobs:
       OPENSSL_VERSION: ${{ inputs.openssl_version }}
       RELEASE_TAG: ${{ inputs.release_tag }}
       RELEASE_NAME: ${{ inputs.release_name }}
+      GH_REPO: ${{ github.repository }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Download packaged artifacts
@@ -227,13 +230,14 @@ jobs:
       - name: Publish release assets
         shell: bash
         run: |
-          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+          if ! gh release view "$RELEASE_TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
             gh release create "$RELEASE_TAG" \
+              --repo "$GH_REPO" \
               --title "$RELEASE_NAME" \
               --notes "OpenSSL release artifacts for $OPENSSL_VERSION." || true
           fi
 
-          gh release upload "$RELEASE_TAG" release-assets/* --clobber
+          gh release upload "$RELEASE_TAG" release-assets/* --repo "$GH_REPO" --clobber
 
   build-mingw64:
     if: ${{ inputs.build_mode == 'mingw64' }}
@@ -294,6 +298,7 @@ jobs:
       OPENSSL_VERSION: ${{ inputs.openssl_version }}
       RELEASE_TAG: ${{ inputs.release_tag }}
       RELEASE_NAME: ${{ inputs.release_name }}
+      GH_REPO: ${{ github.repository }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Download packaged artifacts
@@ -311,10 +316,11 @@ jobs:
       - name: Publish release assets
         shell: bash
         run: |
-          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+          if ! gh release view "$RELEASE_TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
             gh release create "$RELEASE_TAG" \
+              --repo "$GH_REPO" \
               --title "$RELEASE_NAME" \
               --notes "OpenSSL release artifacts for $OPENSSL_VERSION." || true
           fi
 
-          gh release upload "$RELEASE_TAG" release-assets/* --clobber
+          gh release upload "$RELEASE_TAG" release-assets/* --repo "$GH_REPO" --clobber
