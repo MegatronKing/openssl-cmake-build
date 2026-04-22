@@ -1,14 +1,14 @@
 #!/bin/bash
 
-IOS_PRESET="ios"
-SIM_PRESET="ios_sim"
-MAC_PRESET="macos"
+IOS_ARM64_PRESET="ios-arm64"
+MAC_ARM64_PRESET="macos-arm64"
+MAC_X64_PRESET="macos-x86_64"
 OUTPUT="install/OpenSSL.xcframework"
 LIBS=""
 
 set -e
 
-for preset in $IOS_PRESET $SIM_PRESET $MAC_PRESET; do
+for preset in $IOS_ARM64_PRESET $MAC_ARM64_PRESET $MAC_X64_PRESET; do
     INSTALL_DIR="install/$preset"
 
     rm -rf $INSTALL_DIR
