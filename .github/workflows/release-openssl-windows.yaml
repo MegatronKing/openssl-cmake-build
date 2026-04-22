@@ -61,7 +61,7 @@ jobs:
     with:
       platform_name: windows
       build_mode: preset
-      matrix_json: '{"include":[{"os":"windows-latest","preset":"windows-x86","archive_ext":"zip"},{"os":"windows-latest","preset":"windows-x86_64","archive_ext":"zip"},{"os":"windows-latest","preset":"windows-arm","archive_ext":"zip"},{"os":"windows-latest","preset":"windows-arm64","archive_ext":"zip"}]}'
+      matrix_json: '{"include":[{"os":"windows-latest","preset":"windows-x86","archive_ext":"zip"},{"os":"windows-latest","preset":"windows-x86_64","archive_ext":"zip"},{"os":"windows-latest","preset":"windows-arm64","archive_ext":"zip"}]}'
       openssl_version: ${{ needs.resolve-release.outputs.openssl_version }}
       release_tag: ${{ needs.resolve-release.outputs.release_tag }}
       release_name: ${{ needs.resolve-release.outputs.release_name }}
